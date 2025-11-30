@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>GIGACHAD ALPHA (Still Beta)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="GIGACHAD ALPHA (Still Beta) – the first sovereign paradox of Base. Alpha flex, Beta vibes.">
+  <style>
+    :root {
+      --bg: #020617;
+      --bg-alt: #020818;
+      --accent: #1d4ed8;
+      --accent-soft: #38bdf8;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --card: #020b1f;
+      --border: #1f2937;
+      --danger: #f97316;
+      --radius: 18px;
+      --shadow: 0 16px 40px rgba(0,0,0,0.5);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #0b1120 0, #020617 60%, #000 100%);
+      color: var(--text);
+    }
+    a { color: inherit; text-decoration: none; }
+    img { max-width: 100%; display: block; }
+    .wrapper {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px 16px 64px;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    header .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    header .brand img {
+      width: 56px;
+      height: 56px;
+      border-radius: 999px;
+      box-shadow: 0 0 24px rgba(59,130,246,0.7);
+    }
+    header .brand span {
+      font-weight: 600;
+      font-size: 1.1rem;
+      letter-spacing: 0.04em;
+    }
+    header nav a {
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-left: 16px;
+    }
+    header nav a:hover {
+      color: var(--accent-soft);
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0,1.3fr) minmax(0,1fr);
+      gap: 32px;
+      align-items: center;
+      padding: 32px 24px;
+      border-radius: 24px;
+      background: radial-gradient(circle at top left, rgba(56,189,248,0.14), transparent 60%),
+                  radial-gradient(circle at bottom right, rgba(37,99,235,0.26), transparent 55%),
+                  linear-gradient(135deg, #020617, #020617);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(148,163,184,0.2);
+      margin-bottom: 40px;
+    }
+    .hero-title {
+      font-size: clamp(2.1rem, 4vw, 2.8rem);
+      font-weight: 800;
+      line-height: 1.05;
+      margin-bottom: 12px;
+    }
+    .hero-sub {
+      color: var(--muted);
+      font-size: 0.98rem;
+      margin-bottom: 20px;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.7);
+      border: 1px solid rgba(148,163,184,0.3);
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+    .hero-badge span {
+      color: var(--accent-soft);
+      font-weight: 600;
+    }
+    .hero-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .btn {
+      padding: 10px 18px;
+      border-radius: 999px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border: 1px solid transparent;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #2563eb, #38bdf8);
+      color: white;
+      box-shadow: 0 10px 25px rgba(37,99,235,0.5);
+    }
+    .btn-outline {
+      background: transparent;
+      border-color: rgba(148,163,184,0.6);
+      color: var(--muted);
+    }
+    .hero-meta {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    .hero-logo {
+      justify-self: center;
+    }
+    .hero-logo img {
+      width: 230px;
+      height: 230px;
+      border-radius: 999px;
+      box-shadow: 0 0 40px rgba(56,189,248,0.9);
+    }
+
+    section {
+      margin-bottom: 40px;
+    }
+    section h2 {
+      font-size: 1.4rem;
+      margin-bottom: 10px;
+    }
+    section p {
+      font-size: 0.95rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .card {
+      background: radial-gradient(circle at top, rgba(15,23,42,0.9), rgba(15,23,42,0.98));
+      border-radius: var(--radius);
+      padding: 18px 18px 16px;
+      border: 1px solid rgba(31,41,55,0.9);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.6);
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit,minmax(260px,1fr));
+      gap: 18px;
+    }
+    .tokenomics-list {
+      list-style: none;
+      padding: 0;
+      margin: 8px 0 0;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+    .tokenomics-list li::before {
+      content: "• ";
+      color: var(--accent-soft);
+    }
+
+    .roadmap {
+      display: grid;
+      grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+      gap: 16px;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+    .roadmap h3 {
+      font-size: 1rem;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+
+    .faq-item {
+      margin-bottom: 10px;
+      font-size: 0.92rem;
+    }
+    .faq-q {
+      font-weight: 600;
+      color: var(--text);
+    }
+    .faq-a {
+      color: var(--muted);
+    }
+
+    footer {
+      border-top: 1px solid #111827;
+      padding-top: 16px;
+      font-size: 0.8rem;
+      color: #6b7280;
+      text-align: center;
+      margin-top: 24px;
+    }
+
+    @media (max-width: 720px) {
+      header { flex-direction: column; align-items: flex-start; }
+      .hero {
+        grid-template-columns: 1fr;
+        padding: 22px 18px;
+      }
+      .hero-logo img {
+        width: 190px;
+        height: 190px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <header>
+      <div class="brand">
+        <!-- Replace src with your logo URL -->
+        <img src="https://turquoise-blank-swallow-685.mypinata.cloud/ipfs/bafybeifkxelkienf6koqqbfismnjf6qm6k3pnfku56pkrdcspnyhdck6my" alt="GIGACHAD ALPHA">
+        <span>GIGACHAD ALPHA (Still Beta)</span>
+      </div>
+      <nav>
+        <a href="#about">About</a>
+        <a href="#tokenomics">Tokenomics</a>
+        <a href="#vault">Vault of β</a>
+        <a href="#how">How to Ape</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div>
+          <div class="hero-badge">
+            <span>BASE</span> sovereign paradox • meme coin
+          </div>
+          <h1 class="hero-title">Alpha flex. <br>Still Beta.</h1>
+          <p class="hero-sub">
+            GIGACHAD ALPHA (Still Beta) is the first sovereign paradox of Base.
+            A memetic anomaly that refuses to leave beta phase, powered by pure delusion and 20% Vault of β.
+          </p>
+          <div class="hero-buttons">
+            <a class="btn btn-primary" href="#vault">Praise β</a>
+            <!-- replace href with Dex/Clanker link -->
+            <a class="btn btn-outline" href="#" target="_blank" rel="noopener">Buy on Base</a>
+          </div>
+          <div class="hero-meta">
+            96% delusion • 4% liquidity • 0% roadmap • 100% UNI BASE ENERGY
+          </div>
+        </div>
+        <div class="hero-logo">
+          <img src="https://turquoise-blank-swallow-685.mypinata.cloud/ipfs/bafybeifkxelkienf6koqqbfismnjf6qm6k3pnfku56pkrdcspnyhdck6my" alt="GCAβ Logo">
+        </div>
+      </section>
+
+      <section id="about">
+        <div class="grid-2">
+          <div class="card">
+            <h2>What is GCAβ?</h2>
+            <p>
+              GIGACHAD ALPHA (Still Beta) is a meme coin born from a failed experiment to engineer “the ultimate Chad”.
+              Scientists tried to deploy an ALPHA. It came out BETA. We shipped it anyway.
+            </p>
+            <p>
+              He calls himself Alpha. He behaves like GigaChad. He’s coded like a test token.
+              But he smokes liquidity like a full deity. This isn’t a testnet toy, it’s a sovereign shitpost running on Base.
+            </p>
+          </div>
+          <div class="card">
+            <h2>The Paradox of β</h2>
+            <p>
+              Forged during an unstable solar flare while the dev was sleep-deprived, GCAβ is a memetic anomaly that refuses
+              to leave beta phase.
+            </p>
+            <p>
+              Where <b>Alpha flex</b> meets <b>Beta energy</b>.<br>
+              Where <b>lore is canon</b> but <b>code is questionable</b>.<br>
+              Where <b>sovereignty</b> meets <b>degeneracy</b>.
+            </p>
+            <p>
+              You don’t “invest” in GIGACHAD ALPHA. You <b>admit</b> you’re part of the problem and press buy anyway.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section id="tokenomics">
+        <div class="card">
+          <h2>Tokenomics (if you can call it that)</h2>
+          <ul class="tokenomics-list">
+            <li>0% Buy / 0% Sell Tax – pure degen flow.</li>
+            <li>20% Vault of β – the Church of Chad Treasury.</li>
+            <li>Community liquidity on Base, powered by Clanker.</li>
+            <li>No VC. No team unlocks. No serious roadmap.</li>
+          </ul>
+          <p style="margin-top:10px;">
+            This isn’t “fair launch”. This is <b>“we launched and we’re fair about being unfair.”</b>
+          </p>
+        </div>
+      </section>
+
+      <section id="vault">
+        <div class="card">
+          <h2>The Vault of β - 20% for Chaos</h2>
+          <p>
+            20% of the supply rests inside the <b>Vault of β</b> - a holy war chest for:
+          </p>
+          <ul class="tokenomics-list">
+            <li>Meme campaigns and raid funds.</li>
+            <li>LP reinforcement when things get too stupid.</li>
+            <li>Bribes, contests, and ritual airdrops.</li>
+            <li>Experimental degen ideas approved by the Cult of Chad.</li>
+          </ul>
+          <p>
+            The vault is not a “dev wallet”. It’s a <b>paradox engine</b>. If you see it move, something entertaining is
+            probably about to happen.
+          </p>
+          <!-- Replace # with a block-explorer link for the vault -->
+          <a class="btn btn-outline" href="#" target="_blank" rel="noopener">Track the Vault</a>
+        </div>
+      </section>
+
+      <section id="how">
+        <div class="grid-2">
+          <div class="card">
+            <h2>How to Ape</h2>
+            <p><b>1.</b> Get ETH on Base – bridge or send directly to your wallet.</p>
+            <p><b>2.</b> Open the DEX link – use “Buy on Base” above.</p>
+            <p><b>3.</b> Set slippage like a responsible degen – 0.5–2% is usually enough.</p>
+            <p><b>4.</b> Press Swap – congratulations, you are now 96% delusion and 4% liquidity.</p>
+            <p><i>Never bet more than you’re willing to see in a cringe meme screenshot later.</i></p>
+          </div>
+          <div class="card">
+            <h2>Roadmap (™)</h2>
+            <div class="roadmap">
+              <div>
+                <h3>Phase 0 – Shame Launch</h3>
+                <p>Deploy on Base. Realize it actually worked. Tweet “we made a mistake”.</p>
+              </div>
+              <div>
+                <h3>Phase 1 – Cult of β</h3>
+                <p>Recruit the first 100 Chads. Spam pixel sunglasses &amp; β. Turn the vault into a content machine.</p>
+              </div>
+              <div>
+                <h3>Phase 2 – Cross-Lore</h3>
+                <p>RuneTunes × GCAβ. Jank One × GCAβ. Base degen collabs and cursed partnerships.</p>
+              </div>
+              <div>
+                <h3>Phase 3 – Still Beta</h3>
+                <p>Refuse to ever call it “alpha release”. Ship chaos updates. Stay ungovernable.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="faq">
+        <div class="card">
+          <h2>FAQ</h2>
+          <div class="faq-item">
+            <div class="faq-q">Is this safe?</div>
+            <div class="faq-a">Emotionally? No. Contract-wise? DYOR, anon.</div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-q">Wen utility?</div>
+            <div class="faq-a">The utility is being early to the dumbest smart idea on Base.</div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-q">Are devs doxxed?</div>
+            <div class="faq-a">We are all doxxed in the eyes of β.</div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-q">Is this a joke?</div>
+            <div class="faq-a">Yes. Also no. Also maybe.</div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      GIGACHAD ALPHA (Still Beta) - Powered by Base, Forged by Clanker, Sustained by Pure Delusion.<br>
+      Nothing here is financial advice. Everything here is a confession.
+    </footer>
+  </div>
+</body>
+</html>
