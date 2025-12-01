@@ -20,4 +20,4 @@ By interacting with GCAβ, you acknowledge:
 If this makes you uncomfortable, do not participate.
 
 Praise β.
-https://gchbeta.github.io/website/
+https://gchbeta.github.io/GCA
