@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GIGACHAD ALPHA — Chad.exe v0.1 (Still Beta)</title>
+<link rel="stylesheet" href="style.css">
+<script defer src="game.js"></script>
+</head>
+<body>
+
+<!-- Chad.exe Boot Ritual -->
+<div id="bootScreen">
+  <p>Initializing <span class="accent">Chad.exe</span>…</p>
+  <p>Loading <span class="accent">Sovereign Core</span>…</p>
+  <p>Attempting <span class="accent">Alpha Mode</span>…</p>
+  <p class="error">ERROR: Still Beta.</p>
+</div>
+
+<!-- Main Game -->
+<div id="gameContainer">
+  <canvas id="bgCanvas"></canvas>
+
+  <!-- HUD -->
+  <div id="hud">
+    <div class="hud-line">
+      Chad.exe <span class="accent">v0.1</span>
+      (<span id="progressVal">000</span>%)
+    </div>
+    <div class="hud-sub">
+      Crashes: <span id="crashCount">0</span>
+      · Status: <span id="statusText" class="accent">STILL BETA</span>
+    </div>
+  </div>
+
+  <!-- Jawline Artifact + Label -->
+  <div id="jawArea">
+    <div id="jawButton"></div>
+    <div id="jawLabel">CLICK HERE, BETA</div>
+  </div>
+
+  <!-- Controls -->
+  <div id="controls">
+    <button id="overclockBtn" class="control-btn">OVERCLOCK CPU</button>
+    <button id="delusionBtn" class="control-btn">BOOST DELUSION</button>
+  </div>
+
+  <!-- Log / Flavor Text -->
+  <div id="log"></div>
+
+  <!-- Mythic failure overlay -->
+  <div id="failOverlay">
+    <div class="fail-inner">
+      <div class="fail-title">UPGRADE TO v2.0 FAILED</div>
+      <div class="fail-sub">REVERTING TO v0.1 (STILL BETA)</div>
+    </div>
+  </div>
+</div>
+
+<!-- Optional audio hooks (add your own sounds in /assets and set src) -->
+<audio id="clickSound" src="" preload="auto"></audio>
+<audio id="failSound" src="" preload="auto"></audio>
+
+</body>
+</html>

@@ -1,0 +1,254 @@
+/* Global */
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: radial-gradient(circle at top, #050816 0%, #020309 40%, #000000 100%);
+  color: #eef7ff;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+}
+
+/* BOOT SCREEN */
+#bootScreen {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at center, #040612 0%, #000000 70%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.4rem;
+  gap: 0.4rem;
+  letter-spacing: 0.05em;
+}
+
+#bootScreen p {
+  opacity: 0.8;
+}
+
+#bootScreen .accent {
+  color: #4ab6ff;
+  text-shadow: 0 0 12px #4ab6ff;
+}
+
+#bootScreen .error {
+  margin-top: 1rem;
+  color: #4ab6ff;
+  text-shadow: 0 0 18px #4ab6ff;
+  font-weight: 600;
+}
+
+/* MAIN GAME CONTAINER */
+#gameContainer {
+  display: none;
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+}
+
+/* FULLSCREEN CANVAS */
+#bgCanvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* HUD */
+#hud {
+  position: absolute;
+  top: 1.2rem;
+  left: 1.2rem;
+  z-index: 10;
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
+}
+
+.hud-line {
+  font-size: 1.2rem;
+}
+
+.hud-sub {
+  margin-top: 0.25rem;
+  font-size: 0.95rem;
+  opacity: 0.9;
+}
+
+.accent {
+  color: #4ab6ff;
+}
+
+/* JAW AREA */
+#jawArea {
+  position: absolute;
+  left: 50%;
+  bottom: 18%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  z-index: 10;
+}
+
+/* JAWLINE ARTIFACT BUTTON */
+#jawButton {
+  width: min(28vw, 220px);
+  height: min(28vw, 220px);
+  border-radius: 50%;
+  background: radial-gradient(circle at top, #6fd4ff 0%, #1a7fd1 40%, #043155 100%);
+  box-shadow:
+    0 0 24px rgba(79, 182, 255, 0.9),
+    0 0 70px rgba(12, 70, 140, 0.9);
+  mask: url("assets/jawline.png") center/contain no-repeat;
+  -webkit-mask: url("assets/jawline.png") center/contain no-repeat;
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.2s ease;
+  animation: jawPulse 2.4s infinite ease-in-out;
+}
+
+#jawButton:hover {
+  transform: scale(1.05);
+  box-shadow:
+    0 0 28px rgba(79, 182, 255, 1),
+    0 0 90px rgba(12, 70, 140, 1);
+}
+
+#jawButton.fail {
+  background: radial-gradient(circle at top, #ff86c5 0%, #d32278 40%, #4f0321 100%);
+  box-shadow:
+    0 0 24px rgba(255, 92, 150, 0.9),
+    0 0 70px rgba(120, 20, 60, 0.9);
+}
+
+@keyframes jawPulse {
+  0%, 100% {
+    box-shadow:
+      0 0 24px rgba(79, 182, 255, 0.9),
+      0 0 70px rgba(12, 70, 140, 0.9);
+  }
+  50% {
+    box-shadow:
+      0 0 38px rgba(79, 182, 255, 1),
+      0 0 110px rgba(12, 70, 140, 1);
+  }
+}
+
+/* JAW LABEL */
+#jawLabel {
+  font-size: 0.95rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+/* CONTROLS */
+#controls {
+  position: absolute;
+  right: 1.2rem;
+  bottom: 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 10;
+}
+
+.control-btn {
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(90, 170, 255, 0.8);
+  background: rgba(5, 18, 40, 0.9);
+  color: #eaf3ff;
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.15s, box-shadow 0.15s, transform 0.08s;
+}
+
+.control-btn:hover {
+  background: rgba(18, 48, 90, 0.95);
+  box-shadow: 0 0 12px rgba(80, 160, 255, 0.6);
+  transform: translateY(-1px);
+}
+
+.control-btn.active {
+  background: rgba(28, 68, 120, 1);
+  box-shadow: 0 0 18px rgba(80, 160, 255, 0.9);
+}
+
+/* LOG / FLAVOR TEXT */
+#log {
+  position: absolute;
+  left: 50%;
+  bottom: 4%;
+  transform: translateX(-50%);
+  text-align: center;
+  max-width: min(90vw, 600px);
+  font-size: 0.85rem;
+  opacity: 0.85;
+  z-index: 10;
+}
+
+/* FAILURE OVERLAY */
+#failOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease-out;
+  z-index: 20;
+}
+
+#failOverlay.visible {
+  opacity: 1;
+}
+
+#failOverlay::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(7, 18, 40, 0.96), rgba(0, 0, 0, 0.98));
+}
+
+.fail-inner {
+  position: relative;
+  padding: 1.8rem 2.4rem;
+  border-radius: 1.4rem;
+  border: 1px solid rgba(94, 184, 255, 0.85);
+  box-shadow:
+    0 0 25px rgba(80, 170, 255, 0.9),
+    0 0 80px rgba(0, 0, 0, 1);
+  background: radial-gradient(circle at top, rgba(32, 60, 120, 0.9), rgba(5, 12, 28, 1));
+  text-align: center;
+}
+
+.fail-title {
+  font-size: 1.2rem;
+  letter-spacing: 0.16em;
+  margin-bottom: 0.35rem;
+}
+
+.fail-sub {
+  font-size: 0.95rem;
+  letter-spacing: 0.12em;
+  color: #4ab6ff;
+}
+
+/* MOBILE TWEAKS */
+@media (max-width: 600px) {
+  .hud-line {
+    font-size: 1rem;
+  }
+  .hud-sub {
+    font-size: 0.8rem;
+  }
+  #controls {
+    right: 0.6rem;
+  }
+  .control-btn {
+    font-size: 0.7rem;
+  }
+}
