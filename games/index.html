@@ -6,144 +6,201 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/png" href="../GCHAlphaBeta.png" />
   <link rel="stylesheet" href="../games/css/games.css">
-  <!-- reuse shared state + beta field if needed -->
+  <!-- shared β state, ticker, beta field -->
   <script defer src="../chad.js"></script>
+  <!-- Chad.exe logic (leaderboard, metrics, wallet, etc.) -->
   <script defer src="../games/games.js"></script>
 </head>
 <body class="games-body">
-  <div class="games-shell">
-    <aside class="games-sidebar">
-      <div class="side-header">
-        <span class="side-title">Chad.exe OS</span>
-        <span class="side-sub">v0.1 · Still Beta</span>
+  <div class="games-wrapper">
+    <!-- TOP BAR -->
+    <header class="games-header">
+      <div class="games-title">
+        <div class="games-tag">GCAβ / Games</div>
+        <h1>Chad.exe v0.1 — Ego Uplinker</h1>
+        <p>Charge the β ego-core, watch the metrics wobble, and try (and fail) to leave beta.</p>
       </div>
-
-      <div class="side-section">
-        <button class="side-link active" data-panel="clickerPanel">⚡ Chad.exe Clicker</button>
-        <button class="side-link" data-panel="statsPanel">📊 Beta Metrics</button>
-        <button class="side-link" data-panel="crashPanel">💥 Crash Log</button>
-      </div>
-
-      <div class="side-section wallet-box">
+      <div class="games-actions">
         <button id="walletConnect" class="wallet-btn">Connect Wallet</button>
-        <div class="wallet-addr" id="walletAddr">Wallet: not connected</div>
+        <div id="walletAddr" class="wallet-addr">Wallet: not connected</div>
       </div>
-
-      <div class="side-footer">
-        <a href="../index.html" class="back-home">← Return to main site</a>
-      </div>
-    </aside>
+    </header>
 
     <main class="games-main">
-      <!-- CLICKER PANEL -->
-      <section class="panel visible" id="clickerPanel">
-        <header class="panel-header">
-          <h1>Chad.exe v0.1 — Ego Uplinker</h1>
-          <p>Every click charges the β ego-core. Hit 100% to attempt v2.0. Spoiler: it always crashes.</p>
-        </header>
+      <!-- HERO: CLICKER + HUD -->
+      <section class="hero-grid">
+        <div class="clicker-card">
+          <div class="click-display">
+            <div class="click-label">β CORE CHARGE</div>
+            <div class="click-value" id="clickPercent">0%</div>
+            <div class="click-sub">
+              Crashes logged: <span id="crashCount">0</span>
+            </div>
+          </div>
 
-        <div class="clicker-layout">
-          <div class="clicker-core">
-            <div class="click-display">
-              <div class="click-label">β CORE CHARGE</div>
-              <div class="click-value" id="clickPercent">0%</div>
-              <div class="click-sub">
-                Crashes logged: <span id="crashCount">0</span>
+          <button id="clickButton" class="click-button" type="button">
+            <span class="click-beta">β</span>
+            <span class="click-caption">CLICK HERE, BETA</span>
+          </button>
+
+          <div class="charge-bar">
+            <div class="charge-fill" id="chargeFill"></div>
+          </div>
+
+          <div class="click-footnote">
+            Reaching 100% attempts v2.0.  
+            v2.0 always crashes. That’s the point.
+          </div>
+        </div>
+
+        <div class="hud-card">
+          <h2>β Metrics HUD</h2>
+          <p class="hud-sub">Tokenomics-inspired sliders. Absolutely not audited science.</p>
+
+          <div class="metrics-grid">
+            <div class="metric">
+              <div class="metric-header">
+                <span>Delusion Level</span>
+                <span id="delusionVal">96%</span>
               </div>
+              <div class="metric-bar">
+                <div class="metric-fill" id="delusionFill"></div>
+              </div>
+              <p class="metric-desc">Rises with volatility and ego spam.</p>
             </div>
 
-            <button id="clickButton" class="click-button" type="button">
-              <span class="click-beta">β</span>
-              <span class="click-caption">CLICK HERE, BETA</span>
-            </button>
+            <div class="metric">
+              <div class="metric-header">
+                <span>FOMO Voltage</span>
+                <span id="fomoVal">50%</span>
+              </div>
+              <div class="metric-bar">
+                <div class="metric-fill" id="fomoFill"></div>
+              </div>
+              <p class="metric-desc">Powered by green candles & cursed tweets.</p>
+            </div>
 
-            <div class="charge-bar">
-              <div class="charge-fill" id="chargeFill"></div>
+            <div class="metric">
+              <div class="metric-header">
+                <span>FEAR Index</span>
+                <span id="fearVal">50%</span>
+              </div>
+              <div class="metric-bar">
+                <div class="metric-fill" id="fearFill"></div>
+              </div>
+              <p class="metric-desc">Spikes when v2.0 explodes. Often.</p>
             </div>
-          </div>
 
-          <div class="clicker-side">
-            <div class="mini-card">
-              <h2>Patch Notes</h2>
-              <ul>
-                <li>v0.1 — added button.</li>
-                <li>v0.1.1 — still beta.</li>
-                <li>v0.1.2 — crash logs now sarcastic.</li>
-              </ul>
+            <div class="metric">
+              <div class="metric-header">
+                <span>Liquidity Aura</span>
+                <span id="liqVal">4%</span>
+              </div>
+              <div class="metric-bar">
+                <div class="metric-fill" id="liqFill"></div>
+              </div>
+              <p class="metric-desc">Almost symbolic. Just like your risk management.</p>
             </div>
-            <div class="mini-card">
-              <h2>Crash Message</h2>
-              <p id="crashMessage">No catastrophic ego failures… yet.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- STATS PANEL -->
-      <section class="panel" id="statsPanel">
-        <header class="panel-header">
-          <h1>β Metrics Dashboard</h1>
-          <p>Tokenomics-inspired meters. Totally serious science.</p>
-        </header>
-
-        <div class="metrics-grid">
-          <div class="metric-card">
-            <div class="metric-header">
-              <span>Delusion Level</span>
-              <span id="delusionVal">96%</span>
-            </div>
-            <div class="metric-bar">
-              <div class="metric-fill" id="delusionFill"></div>
-            </div>
-            <p class="metric-desc">Rises with price volatility and every ego click.</p>
-          </div>
-
-          <div class="metric-card">
-            <div class="metric-header">
-              <span>FOMO Voltage</span>
-              <span id="fomoVal">50%</span>
-            </div>
-            <div class="metric-bar">
-              <div class="metric-fill" id="fomoFill"></div>
-            </div>
-            <p class="metric-desc">Fed by green candles and cursed tweets.</p>
-          </div>
-
-          <div class="metric-card">
-            <div class="metric-header">
-              <span>FEAR Index</span>
-              <span id="fearVal">50%</span>
-            </div>
-            <div class="metric-bar">
-              <div class="metric-fill" id="fearFill"></div>
-            </div>
-            <p class="metric-desc">Spikes when crashes happen or volume dies.</p>
-          </div>
-
-          <div class="metric-card">
-            <div class="metric-header">
-              <span>Liquidity Aura</span>
-              <span id="liqVal">4%</span>
-            </div>
-            <div class="metric-bar">
-              <div class="metric-fill" id="liqFill"></div>
-            </div>
-            <p class="metric-desc">Almost symbolic, just like your risk management.</p>
           </div>
         </div>
       </section>
 
-      <!-- CRASH PANEL -->
-      <section class="panel" id="crashPanel">
-        <header class="panel-header">
-          <h1>Crash Log</h1>
-          <p>Every time you try to go “full alpha”, the universe writes it down.</p>
-        </header>
-        <div class="crash-log" id="crashLog">
-          <!-- entries via JS -->
+      <!-- LOWER GRID: CRASH LOG + LEADERBOARD + HODLERS + COMING SOON -->
+      <section class="lower-grid">
+        <div class="crash-card">
+          <div class="card-header">
+            <h2>Crash Log</h2>
+            <span class="card-tag">v2.0 attempts</span>
+          </div>
+          <p class="card-sub">Every time the ego-core hits 100% and detonates, we write it down.</p>
+          <div class="crash-log" id="crashLog">
+            <!-- entries via JS -->
+          </div>
+          <div class="crash-tip">
+            Tip: Click the logo on the main site too. External crashes appear here as remote β failures.
+          </div>
+        </div>
+
+        <div class="side-column">
+          <div class="leader-card">
+            <div class="card-header">
+              <h2>Clicker Leaderboard</h2>
+              <span class="card-tag">local · still beta</span>
+            </div>
+            <p class="card-sub">
+              Tracks clicks & crashes per wallet on this device.  
+              Global leaderboard requires a backend — this is your local shrine.
+            </p>
+            <table class="leader-table" id="leaderTable">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Wallet / User</th>
+                  <th>Clicks</th>
+                  <th>Crashes</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- rows via JS -->
+              </tbody>
+            </table>
+          </div>
+
+          <div class="hodlers-card">
+            <div class="card-header">
+              <h2>HODLERS Intel</h2>
+              <span class="card-tag">on-chain</span>
+            </div>
+            <p class="card-sub">
+              Live holder breakdown can be loaded via BaseScan API (once you drop an API key into the code).
+              For now, use the explorer link for full details.
+            </p>
+            <ul class="hodlers-list" id="hodlersList">
+              <li>Top non-contract holders will appear here when API is configured.</li>
+              <li>Exchanges, LPs and contracts can be filtered out client-side.</li>
+            </ul>
+            <a
+              class="btn-outline small"
+              href="https://basescan.org/token/tokenholderchart/0x6d0B8eB75E9d6735cc301c3a6E82adeE43590B07"
+              target="_blank"
+              rel="noopener"
+            >
+              View full holder chart ↗
+            </a>
+          </div>
+
+          <div class="coming-card">
+            <div class="card-header">
+              <h2>Coming Soon — Chad Arcade</h2>
+              <span class="card-tag">still beta</span>
+            </div>
+            <ul class="coming-list">
+              <li>
+                <span class="game-name">Vault of β — Tower Defense</span>
+                <span class="game-tag">protect the 20% treasury from paper hands</span>
+              </li>
+              <li>
+                <span class="game-name">Runner of Shame</span>
+                <span class="game-tag">endless runner inside a red candle</span>
+              </li>
+              <li>
+                <span class="game-name">Liquidity Jenga</span>
+                <span class="game-tag">remove blocks, pray the pool doesn’t collapse</span>
+              </li>
+              <li>
+                <span class="game-name">Beta Oracle</span>
+                <span class="game-tag">yes/no on-chain coin-flip, 0% accuracy</span>
+              </li>
+            </ul>
+          </div>
         </div>
       </section>
     </main>
+
+    <footer class="games-footer">
+      <a href="../index.html">← Back to main site</a>
+      <span>GIGACHAD ALPHA β · games module · still beta</span>
+    </footer>
   </div>
 </body>
 </html>
