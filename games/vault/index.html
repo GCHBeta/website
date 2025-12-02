@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Vault of β — Tower Defense</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="../../GCHAlphaBeta.png" />
+  <link rel="stylesheet" href="/games/vault/vault.css" />
+  <!-- Optional: shared β state / beta field / ticker -->
+  <script defer src="/games/vault/vault.js"></script>
+  <script defer src="/games/games.js"></script>
+</head>
+<body class="vault-body">
+  <div class="vault-wrapper">
+    <header class="vault-header">
+      <div class="vh-left">
+        <div class="vh-tag">GCAβ / Vault Defense</div>
+        <h1>Vault of β — Tower Defense</h1>
+        <p>Protect the 20% Vault of β from Paper Hands, Tax Men, and Exit Liquidity enjoyers.</p>
+      </div>
+      <div class="vh-right">
+        <div class="stat-row">
+          <span>Vault HP</span>
+          <div class="hp-bar">
+            <div id="vaultHpFill" class="hp-fill"></div>
+          </div>
+          <span id="vaultHpText" class="hp-text">100%</span>
+        </div>
+        <div class="stat-row">
+          <span>Copium</span>
+          <span id="copiumText" class="stat-val">50</span>
+        </div>
+        <div class="stat-row">
+          <span>Wave</span>
+          <span id="waveText" class="stat-val">1 / 5</span>
+        </div>
+        <button id="startWaveBtn" class="btn-primary">Start Wave</button>
+      </div>
+    </header>
+
+    <main class="vault-main">
+      <section class="game-shell">
+        <div class="toolbar">
+          <div class="tool-group">
+            <div class="tool-label">Towers</div>
+            <button class="tower-btn selected" data-tower="giga">
+              <div class="tower-name">GigaChad Guard</div>
+              <div class="tower-meta">Cost: 25 Copium · mid range</div>
+            </button>
+            <button class="tower-btn" data-tower="copium">
+              <div class="tower-name">Copium Cannon</div>
+              <div class="tower-meta">Cost: 40 Copium · long range</div>
+            </button>
+          </div>
+          <div class="tool-group">
+            <div class="tool-label">Tips</div>
+            <div class="tips">
+              <p>1. Select a tower, then click a glowing slot near the lane.</p>
+              <p>2. Defeated enemies drop Copium for more defenses.</p>
+              <p>3. If they reach the Vault, HP drops. At 0% you’re rekt.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="canvas-container">
+          <canvas id="vaultCanvas" width="900" height="400"></canvas>
+          <div id="overlayMessage" class="overlay hidden">
+            <div class="overlay-inner">
+              <div id="overlayTitle" class="overlay-title"></div>
+              <div id="overlayText" class="overlay-text"></div>
+              <button id="overlayBtn" class="btn-primary small">Play Again</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="side-info">
+        <div class="card">
+          <h2>Enemy Types</h2>
+          <ul class="info-list">
+            <li>
+              <strong>Paper Hand Peasants</strong> — fast, low HP, chip away at the Vault.
+            </li>
+            <li>
+              <strong>Tax Man</strong> — slower, tougher, chunks HP if he reaches the Vault.
+            </li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h2>Vault Lore</h2>
+          <p>
+            20% of the GCAβ supply rests inside the Vault of β — a glowing treasury of
+            unspent chaos. If the Paper Hands breach it, the meme collapses into a
+            sad red candle.
+          </p>
+          <p>
+            Survive all waves and the Vault holds. Lose, and the cult of β will say:
+            “skill issue.”
+          </p>
+        </div>
+
+        <div class="card">
+          <h2>Controls</h2>
+          <ul class="info-list">
+            <li>Click tower buttons to select which β-defense to place.</li>
+            <li>Click glowing slots (above/below the path) to build.</li>
+            <li>Press “Start Wave” when you’re ready.</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <a href="../index.html" class="back-link">← Back to Chad.exe Games</a>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

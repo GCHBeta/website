@@ -1,0 +1,305 @@
+:root {
+  --bg: #020617;
+  --panel: #020b1f;
+  --accent: #2563eb;
+  --accent-soft: #38bdf8;
+  --muted: #9ca3af;
+  --border: #1f2937;
+  --radius: 18px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body.vault-body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: radial-gradient(circle at top, #0b1120, #020617 60%, #000 100%);
+  color: #e5e7eb;
+}
+
+.vault-wrapper {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 20px 16px 40px;
+}
+
+/* HEADER */
+
+.vault-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.vh-left {
+  max-width: 560px;
+}
+.vh-tag {
+  display: inline-flex;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(51, 65, 85, 0.9);
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.vh-left h1 {
+  margin: 0 0 4px;
+  font-size: 1.5rem;
+}
+.vh-left p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.vh-right {
+  min-width: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-end;
+}
+
+.stat-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.hp-bar {
+  width: 130px;
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(31, 41, 55, 0.9);
+  overflow: hidden;
+}
+.hp-fill {
+  height: 100%;
+  width: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #22c55e, #eab308, #ef4444);
+  transition: width 0.2s ease-out;
+}
+.hp-text {
+  font-variant-numeric: tabular-nums;
+  color: #e5e7eb;
+}
+
+.stat-val {
+  font-variant-numeric: tabular-nums;
+  color: #e5e7eb;
+}
+
+.btn-primary {
+  margin-top: 4px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(56, 189, 248, 0.8);
+  background: linear-gradient(135deg, #2563eb, #38bdf8);
+  color: #f9fafb;
+  font-size: 0.85rem;
+  cursor: pointer;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.8);
+}
+.btn-primary.small {
+  padding: 6px 12px;
+  font-size: 0.8rem;
+}
+.btn-primary:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* MAIN LAYOUT */
+
+.vault-main {
+  display: grid;
+  grid-template-columns: minmax(0, 2.1fr) minmax(0, 1fr);
+  gap: 18px;
+}
+
+/* GAME SHELL */
+
+.game-shell {
+  background: radial-gradient(circle at top, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.98));
+  border-radius: var(--radius);
+  border: 1px solid rgba(31, 41, 55, 0.9);
+  padding: 14px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7);
+}
+
+.toolbar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.tool-group {
+  background: rgba(15, 23, 42, 0.96);
+  border-radius: 12px;
+  border: 1px solid rgba(31, 41, 55, 0.9);
+  padding: 8px 10px;
+  flex: 1 1 260px;
+  font-size: 0.8rem;
+}
+.tool-label {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.tower-btn {
+  width: 100%;
+  display: block;
+  text-align: left;
+  margin-top: 5px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  border: 1px solid rgba(51, 65, 85, 0.9);
+  background: rgba(15, 23, 42, 0.95);
+  color: #e5e7eb;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+.tower-btn.selected {
+  border-color: rgba(56, 189, 248, 0.9);
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.6);
+}
+.tower-name {
+  font-weight: 600;
+}
+.tower-meta {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.tips p {
+  margin: 2px 0;
+}
+
+/* CANVAS */
+
+.canvas-container {
+  margin-top: 10px;
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(31, 41, 55, 0.9);
+}
+
+#vaultCanvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: radial-gradient(circle at top, #020617, #020617 50%, #000 100%);
+}
+
+/* OVERLAY */
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at center, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.98));
+}
+.overlay.hidden {
+  display: none;
+}
+.overlay-inner {
+  padding: 18px 20px 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(56, 189, 248, 0.8);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8);
+  text-align: center;
+}
+.overlay-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.overlay-text {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+/* SIDE INFO */
+
+.side-info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.card {
+  background: radial-gradient(circle at top, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.98));
+  border-radius: var(--radius);
+  border: 1px solid rgba(31, 41, 55, 0.9);
+  padding: 12px 14px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.card h2 {
+  margin: 0 0 6px;
+  font-size: 1rem;
+  color: #e5e7eb;
+}
+.info-list {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+.info-list li + li {
+  margin-top: 4px;
+}
+.back-link {
+  font-size: 0.85rem;
+  color: var(--muted);
+  text-decoration: none;
+}
+.back-link:hover {
+  color: var(--accent-soft);
+}
+
+/* STATES */
+
+.vault-body.vault-damaged #vaultCanvas {
+  animation: vaultFlash 0.25s ease-in-out;
+}
+
+@keyframes vaultFlash {
+  0% { filter: brightness(1); }
+  50% { filter: brightness(1.3); }
+  100% { filter: brightness(1); }
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 900px) {
+  .vault-main {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .vault-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .vh-right {
+    align-items: flex-start;
+  }
+}
