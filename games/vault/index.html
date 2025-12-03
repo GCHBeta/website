@@ -2,223 +2,115 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>GIGACHAD ALPHA β Vault (Tower Defense)</title>
+  <title>Vault of β — Tower Defense</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- From /games/vault/ back to root -->
-  <link rel="icon" type="image/png" href="../../GCHAlphaBeta.png" />
-  <!-- Reuse the main games styling -->
-  <link rel="stylesheet" href="../css/games.css">
-
-  <!-- Shared β state / logo clicker logic -->
-  <script defer src="../../chad.js"></script>
-  <!-- Vault-specific logic (you can adjust inside vault.js) -->
-  <script defer src="./vault.js"></script>
+  <link rel="icon" type="image/png" href="../GCHAlphaBeta.png" />
+  <link rel="stylesheet" href="vault.css">
+  <script defer src="vault.js"></script>
 </head>
-<body class="games-body">
-  <!-- EVERYTHING UI lives inside this wrapper -->
-  <div class="games-wrapper" data-games-page>
-    <!-- TOP NAV BAR -->
-    <header class="games-header">
-      <div class="games-brand">
-        <div class="games-tag">GIGACHAD ALPHA β</div>
-        <h1>β Vault Tower Defense</h1>
-        <p>Defend the 20% treasury from paper hands, rekt dragons and liquidation goblins.</p>
-      </div>
-
-      <div class="header-right">
-        <nav class="games-nav">
-          <a href="../index.html" class="nav-link">Chad.exe Clicker</a>
-          <a href="./index.html" class="nav-link nav-active">β Vault Tower Defense</a>
-          <button type="button" class="nav-link nav-disabled" title="Coming soon">
-            Runner of Shame
-          </button>
-          <button type="button" class="nav-link nav-disabled" title="Coming soon">
-            Liquidity Jenga
-          </button>
-
-          <div class="nav-more">
-            <button type="button" class="nav-link">
-              More ▾
-            </button>
-            <div class="nav-more-menu">
-              <button type="button" class="nav-more-item nav-disabled" title="Coming soon">
-                Beta Oracle
-              </button>
-              <button type="button" class="nav-more-item nav-disabled" title="Coming soon">
-                Chad Arcade (Full)
-              </button>
-            </div>
-          </div>
-        </nav>
-
-        <div class="games-actions">
-          <button id="walletConnect" class="wallet-btn">Connect Wallet</button>
-          <div id="walletAddr" class="wallet-addr">Wallet: not connected</div>
-        </div>
+<body>
+  <div class="layout">
+    <!-- TOP BAR -->
+    <header class="top-bar">
+      <h1 class="logo-title">Vault of β — Tower Defense</h1>
+      <div class="top-actions">
+        <a href="../index.html" class="back-link">← Back to main site</a>
+        <button id="walletConnect" class="wallet-btn">Connect Wallet</button>
+        <span id="walletStatus" class="wallet-status">Wallet: not connected</span>
       </div>
     </header>
 
-    <main class="games-main">
-      <!-- TOP GRID: LEFT = PLAYFIELD, RIGHT = CONTROL PANEL -->
-      <section class="top-grid">
-        <!-- LEFT: GAME BOARD -->
-        <div>
-          <div class="clicker-card">
-            <div class="card-header">
-              <h2>Vault Defense Field</h2>
-              <span class="card-tag">Live Simulation</span>
-            </div>
-            <p class="card-sub">
-              Place defenses, start the wave, and keep the treasury from hitting 0%.
-            </p>
-
-            <!-- Canvas playfield (vault.js can draw on this) -->
-            <div id="vaultCanvasWrapper" style="width: 100%; aspect-ratio: 16 / 9; border-radius: 12px; overflow: hidden; background: radial-gradient(circle at top, #020617, #000); border: 1px solid rgba(31, 41, 55, 0.9);">
-              <canvas id="vaultCanvas" width="960" height="540"></canvas>
-            </div>
-
-            <div class="click-footnote">
-              Tip: Treat the 20% treasury like your last remaining brain cell in a bull trap.
-            </div>
-          </div>
-        </div>
-
-        <!-- RIGHT: STATUS + CONTROLS -->
-        <div class="games-column">
-          <h2 class="panel-title">Vault Status</h2>
-          <p class="panel-sub">
-            Track waves, damage to the treasury and your remaining cope shields.
-          </p>
-
-          <div class="game-cards-grid">
-            <!-- Core Stats -->
-            <article class="game-card">
-              <div class="game-card-header">
-                <h3>Core Telemetry</h3>
-                <span class="status-pill status-green" id="vaultStatusPill">IDLE</span>
-              </div>
-
-              <div class="game-meta">
-                <span>Wave: <strong id="waveNumber">1</strong></span>
-                <span>Difficulty: <strong id="difficultyLabel">β</strong></span>
-              </div>
-
-              <div class="metrics-grid">
-                <div class="metric">
-                  <div class="metric-header">
-                    <span>Treasury Health</span>
-                    <span id="treasuryValue">20.0%</span>
-                  </div>
-                  <div class="metric-bar">
-                    <div class="metric-fill" id="treasuryBar"></div>
-                  </div>
-                  <p class="metric-desc">If this hits 0%, dragons and paper hands win.</p>
-                </div>
-
-                <div class="metric">
-                  <div class="metric-header">
-                    <span>Base Integrity</span>
-                    <span id="livesValue">3</span>
-                  </div>
-                  <div class="metric-bar">
-                    <div class="metric-fill" id="livesBar"></div>
-                  </div>
-                  <p class="metric-desc">How many catastrophic breaches you can still cope with.</p>
-                </div>
-              </div>
-            </article>
-
-            <!-- Controls -->
-            <article class="game-card">
-              <div class="game-card-header">
-                <h3>Wave Controls</h3>
-                <span class="status-pill status-blue-pill">MANUAL</span>
-              </div>
-
-              <p class="game-tagline">
-                Hit <b>Start Wave</b> to spawn a fresh batch of degen attackers.
-              </p>
-
-              <div class="game-meta">
-                <span>Next Wave Power: <strong id="nextWavePower">x1.0</strong></span>
-                <span>β Coins: <strong id="betaCoins">0</strong></span>
-              </div>
-
-              <button class="game-btn" id="startWaveButton" type="button">
-                Start Wave ▸
-              </button>
-            </article>
-
-            <!-- Tower Slots (placeholder, wired by JS later) -->
-            <article class="game-card">
-              <div class="game-card-header">
-                <h3>Defensive Upgrades</h3>
-                <span class="status-pill status-chaos-pill">EXPERIMENTAL</span>
-              </div>
-              <p class="game-tagline">
-                Spend β coins to place or upgrade defenses. UI is local-only for now.
-              </p>
-              <div id="towerList" class="game-meta" style="flex-direction: column; align-items: flex-start;">
-                <span>• Slot 1: <strong>Unassigned</strong></span>
-                <span>• Slot 2: <strong>Unassigned</strong></span>
-                <span>• Slot 3: <strong>Unassigned</strong></span>
-              </div>
-            </article>
-          </div>
-        </div>
+    <!-- MAIN AREA -->
+    <main class="main-area">
+      <!-- LEFT: GAME CANVAS -->
+      <section class="canvas-wrapper">
+        <canvas id="game" width="960" height="540"></canvas>
+        <button id="startOverlay" class="cta-overlay" type="button">
+          Wake the Vault β
+        </button>
       </section>
 
-      <!-- LOWER GRID: LOG + TIPS -->
-      <section class="lower-grid" style="margin-top: 16px;">
-        <div class="crash-card">
-          <div class="card-header">
-            <h2>Vault Combat Log</h2>
-            <span class="card-tag">events</span>
-          </div>
-          <p class="card-sub">
-            Every wave, hit and breach gets logged here for post-mortem cope analysis.
-          </p>
-          <div class="crash-log" id="vaultLog"></div>
-          <div class="crash-tip">
-            Pro tip: if this fills with “breach” lines, you might be the degen, not the dragons.
-          </div>
-        </div>
-
-        <div class="side-column">
-          <div class="leader-card">
-            <div class="card-header">
-              <h2>Run Summary</h2>
-              <span class="card-tag">local only</span>
-            </div>
-            <p class="card-sub">
-              These stats are for this browser only. Global ladders come later, if β ever escapes.
-            </p>
-            <ul class="hodlers-list" id="runSummary">
-              <li>Total waves survived: <span id="summaryWaves">0</span></li>
-              <li>Total treasury lost: <span id="summaryLoss">0.0%</span></li>
-              <li>Max streak without breach: <span id="summaryStreak">0</span></li>
-            </ul>
+      <!-- RIGHT: SIDE PANELS -->
+      <aside class="side-panel">
+        <!-- VAULT STATUS -->
+        <article class="vault-card">
+          <h2>Vault Status</h2>
+          <div class="vault-stats">
+            <span>Vault Shield: <strong id="vaultHpLabel">100</strong>%</span>
+            <span>β Coins: <strong id="coinsLabel">60</strong></span>
+            <span>Wave: <strong id="waveLabel">1</strong></span>
+            <span>Breaches: <strong id="breachLabel">0</strong></span>
           </div>
 
-          <div class="hodlers-card">
-            <div class="card-header">
-              <h2>Vault Lore</h2>
-              <span class="card-tag">fluff</span>
-            </div>
-            <p class="card-sub">
-              The Vault of β holds 20% of supply as a chaos buffer. Your job: make sure
-              the goblins don’t run off with it faster than CT influencers can tweet.
-            </p>
+          <button id="tapVaultBtn" class="vault-tap-btn" type="button">
+            Tap Vault for +5 β
+          </button>
+          <small class="hint">
+            Only between waves. Farmers will be judged later.
+          </small>
+        </article>
+
+        <!-- WAVE / FLOW -->
+        <article class="stage-panel">
+          <h3>Battle Flow</h3>
+          <div>
+            <span>Wave State</span>
+            <span id="waveStateLabel">Idle</span>
           </div>
-        </div>
-      </section>
+          <div>
+            <span>Enemies Remaining</span>
+            <span id="enemiesLabel">0</span>
+          </div>
+          <div>
+            <span>Difficulty</span>
+            <span id="difficultyLabel">Normal</span>
+          </div>
+        </article>
+
+        <!-- CORE ACTIONS -->
+        <article class="actions-panel">
+          <h3>Actions</h3>
+          <button id="startWaveBtn" class="primary-btn" type="button">
+            Start Next Wave
+          </button>
+          <button id="speedBtn" class="secondary-btn" type="button">
+            Speed: 1x
+          </button>
+          <button id="clearGameBtn" class="secondary-btn" type="button">
+            Reset Run
+          </button>
+        </article>
+
+        <!-- BUILD TOWERS -->
+        <article class="actions-panel">
+          <h3>Build Towers</h3>
+          <button class="secondary-btn tower-btn" data-tower="sentinel" type="button">
+            Sentinel Node · 40 β
+          </button>
+          <button class="secondary-btn tower-btn" data-tower="cannon" type="button">
+            Liquidity Cannon · 60 β
+          </button>
+          <button class="secondary-btn tower-btn" data-tower="totem" type="button">
+            Copium Totem · 50 β
+          </button>
+          <small class="hint">
+            Click a glowing slot in the arena, then choose a tower type.
+          </small>
+        </article>
+
+        <!-- GIGA PANIC -->
+        <article class="actions-panel">
+          <h3>GIGA Panic Button</h3>
+          <button id="gigaBtn" class="giga-btn" type="button" disabled>
+            Not charged
+          </button>
+          <small class="hint">
+            Charge builds on breaches. When ready, wipes the field once.
+          </small>
+        </article>
+      </aside>
     </main>
-
-    <footer class="games-footer">
-      <a href="../../index.html">← Back to main site</a>
-      <span>GIGACHAD ALPHA β · Vault of β · still very much experimental</span>
-    </footer>
   </div>
 </body>
 </html>

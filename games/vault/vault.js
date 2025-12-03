@@ -1,445 +1,768 @@
-// vault.js
-// Simple local-only tower-defense style simulation for the Vault of β
+document.addEventListener('DOMContentLoaded', () => {
+  /*** DOM HOOKS ***/
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
 
-document.addEventListener("DOMContentLoaded", () => {
-  // --- DOM HOOKS ---
-  const canvas = document.getElementById("vaultCanvas");
-  const ctx = canvas.getContext("2d");
+  const startOverlay = document.getElementById('startOverlay');
 
-  const startWaveBtn = document.getElementById("startWaveButton");
-  const statusPill = document.getElementById("vaultStatusPill");
+  const vaultHpLabel = document.getElementById('vaultHpLabel');
+  const coinsLabel = document.getElementById('coinsLabel');
+  const waveLabel = document.getElementById('waveLabel');
+  const breachLabel = document.getElementById('breachLabel');
 
-  const waveNumberEl = document.getElementById("waveNumber");
-  const difficultyLabelEl = document.getElementById("difficultyLabel");
+  const waveStateLabel = document.getElementById('waveStateLabel');
+  const enemiesLabel = document.getElementById('enemiesLabel');
+  const difficultyLabel = document.getElementById('difficultyLabel');
 
-  const treasuryValueEl = document.getElementById("treasuryValue");
-  const treasuryBarEl = document.getElementById("treasuryBar");
-  const livesValueEl = document.getElementById("livesValue");
-  const livesBarEl = document.getElementById("livesBar");
+  const tapVaultBtn = document.getElementById('tapVaultBtn');
+  const startWaveBtn = document.getElementById('startWaveBtn');
+  const speedBtn = document.getElementById('speedBtn');
+  const clearGameBtn = document.getElementById('clearGameBtn');
+  const gigaBtn = document.getElementById('gigaBtn');
 
-  const betaCoinsEl = document.getElementById("betaCoins");
-  const nextWavePowerEl = document.getElementById("nextWavePower");
+  const towerButtons = Array.from(
+    document.querySelectorAll('.tower-btn[data-tower]')
+  );
 
-  const vaultLogEl = document.getElementById("vaultLog");
-  const summaryWavesEl = document.getElementById("summaryWaves");
-  const summaryLossEl = document.getElementById("summaryLoss");
-  const summaryStreakEl = document.getElementById("summaryStreak");
+  const walletBtn = document.getElementById('walletConnect');
+  const walletStatus = document.getElementById('walletStatus');
 
-  const towerListEl = document.getElementById("towerList");
-
-  if (!canvas || !ctx) {
-    console.warn("[Vault] No canvas found, skipping game loop");
-    return;
-  }
-
-  // --- STATE ---
-
-  const state = {
-    wave: 1,
-    treasuryPercent: 20.0,  // 20% supply vault
-    treasuryMax: 20.0,
-    lives: 3,
-    maxLives: 3,
-    betaCoins: 0,
-    // summary
-    totalWaves: 0,
-    totalTreasuryLost: 0,
-    bestStreak: 0,
-    currentStreak: 0,
-    running: false,
-    enemies: [],
-    lastTimestamp: 0,
-  };
-
-  // Basic config for waves
-  const CONFIG = {
-    baseEnemies: 8,
-    enemiesGrowth: 1.25,   // more enemies per wave
-    baseSpeed: 40,         // px/s
-    speedGrowth: 1.05,
-    baseDamage: 0.2,       // % treasury per enemy that leaks
-    damageGrowth: 1.02,
-    rewardPerEnemy: 1,     // β coins
-    maxEnemiesOnScreen: 80
-  };
-
-  // --- CANVAS RESIZE ---
-
-  function resizeCanvas() {
-    const wrapper = document.getElementById("vaultCanvasWrapper");
-    if (!wrapper) return;
-    const rect = wrapper.getBoundingClientRect();
-    canvas.width = rect.width;
-    canvas.height = rect.height;
-  }
-
-  resizeCanvas();
-  window.addEventListener("resize", resizeCanvas);
-
-  // --- HELPERS ---
-
-  function setStatus(label, colorClass) {
-    statusPill.textContent = label;
-    statusPill.className = "status-pill " + colorClass;
-  }
-
-  function logEvent(text) {
-    const entry = document.createElement("div");
-    entry.className = "crash-entry"; // reuse style
-    const now = new Date();
-    const time = now.toLocaleTimeString();
-    entry.textContent = `[${time}] ${text}`;
-    vaultLogEl.prepend(entry);
-
-    // keep log manageable
-    while (vaultLogEl.children.length > 80) {
-      vaultLogEl.removeChild(vaultLogEl.lastChild);
-    }
-  }
-
-  function updateStatsUI() {
-    // Wave & difficulty
-    waveNumberEl.textContent = state.wave.toString();
-    const diff =
-      state.wave <= 3 ? "β" :
-      state.wave <= 6 ? "β+" :
-      state.wave <= 10 ? "γ" :
-      "Ω";
-    difficultyLabelEl.textContent = diff;
-
-    treasuryValueEl.textContent = state.treasuryPercent.toFixed(1) + "%";
-    const tRatio = Math.max(0, state.treasuryPercent) / state.treasuryMax;
-    treasuryBarEl.style.width = (tRatio * 100).toFixed(1) + "%";
-
-    livesValueEl.textContent = state.lives.toString();
-    const lRatio = Math.max(0, state.lives) / state.maxLives;
-    livesBarEl.style.width = (lRatio * 100).toFixed(1) + "%";
-
-    betaCoinsEl.textContent = state.betaCoins.toString();
-
-    const wavePower =
-      Math.pow(CONFIG.enemiesGrowth, state.wave - 1) *
-      Math.pow(CONFIG.damageGrowth, state.wave - 1);
-    nextWavePowerEl.textContent = "x" + wavePower.toFixed(2);
-
-    summaryWavesEl.textContent = state.totalWaves.toString();
-    summaryLossEl.textContent = state.totalTreasuryLost.toFixed(1) + "%";
-    summaryStreakEl.textContent = state.bestStreak.toString();
-  }
-
-  function resetRun() {
-    state.wave = 1;
-    state.treasuryPercent = state.treasuryMax;
-    state.lives = state.maxLives;
-    state.betaCoins = 0;
-    state.enemies = [];
-    state.running = false;
-    state.currentStreak = 0;
-    setStatus("IDLE", "status-green");
-    updateStatsUI();
-    clearCanvas();
-    logEvent("Vault reset. Treasury restored to 20% supply.");
-  }
-
-  function clearCanvas() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-  }
-
-  // --- ENEMY/WAVE LOGIC ---
-
-  function spawnWave() {
-    if (state.running) return;
-    state.running = true;
-    setStatus("WAVE RUNNING", "status-red-pill");
-    startWaveBtn.disabled = true;
-
-    const enemies = [];
-    const enemyCount = Math.min(
-      CONFIG.baseEnemies * Math.pow(CONFIG.enemiesGrowth, state.wave - 1),
-      CONFIG.maxEnemiesOnScreen
-    );
-    const speed = CONFIG.baseSpeed * Math.pow(CONFIG.speedGrowth, state.wave - 1);
-    const damage = CONFIG.baseDamage * Math.pow(CONFIG.damageGrowth, state.wave - 1);
-
-    const laneCount = 4;
-    const laneHeight = canvas.height / (laneCount + 1);
-
-    for (let i = 0; i < enemyCount; i++) {
-      const lane = i % laneCount;
-      const y = laneHeight * (lane + 1);
-      const delay = i * 0.3; // seconds delay between spawns
-
-      enemies.push({
-        x: -40,
-        y,
-        radius: 10,
-        speed,
-        damage,
-        spawnDelay: delay,
-        alive: true,
-        leaked: false,
-        timeAlive: 0
-      });
-    }
-
-    state.enemies = enemies;
-    state.lastTimestamp = performance.now();
-
-    logEvent(
-      `Wave ${state.wave} started — ${enemyCount.toFixed(0)} degen attackers detected.`
-    );
-
-    requestAnimationFrame(gameLoop);
-  }
-
-  function endWave(victory) {
-    state.running = false;
-    state.enemies = [];
-    startWaveBtn.disabled = false;
-
-    if (victory) {
-      state.totalWaves += 1;
-      state.currentStreak += 1;
-      if (state.currentStreak > state.bestStreak) {
-        state.bestStreak = state.currentStreak;
+  /*** WALLET CONNECT (BÁSICO) ***/
+  if (walletBtn) {
+    walletBtn.addEventListener('click', async () => {
+      if (!window.ethereum) {
+        alert('Install MetaMask or a Base-compatible wallet to flex your β stats.');
+        return;
       }
-      setStatus("READY", "status-green");
-      logEvent(`Wave ${state.wave} cleared. Vault still stands.`);
-      state.wave += 1;
-    } else {
-      setStatus("BREACHED", "status-red-pill");
-      state.currentStreak = 0;
-      logEvent(`Vault breached. Treasury or lives exhausted. Run over.`);
-    }
-
-    updateStatsUI();
+      try {
+        const accounts = await window.ethereum.request({
+          method: 'eth_requestAccounts',
+        });
+        if (accounts && accounts[0]) {
+          const addr = accounts[0];
+          const short = addr.slice(0, 6) + '…' + addr.slice(-4);
+          walletStatus.textContent = `Wallet: ${short}`;
+          walletBtn.textContent = 'Wallet Connected';
+        }
+      } catch (e) {
+        console.error('Wallet error', e);
+      }
+    });
   }
 
-  // --- DRAWING ---
+  /*** GAME CONSTANTS ***/
+  const VAULT_MAX_HP = 100;
+  const GIGA_MAX = 100;
+  const TAPS_PER_INTERMISSION = 3;
 
-  function drawBackgroundGrid() {
-    ctx.save();
-    ctx.fillStyle = "#020617";
+  const towerCosts = {
+    sentinel: 40,
+    cannon: 60,
+    totem: 50,
+  };
+
+  const towerDefs = {
+    sentinel: {
+      name: 'Sentinel Node',
+      range: 150,
+      fireDelay: 0.7,
+      damage: 8,
+      color: '#38bdf8',
+    },
+    cannon: {
+      name: 'Liquidity Cannon',
+      range: 220,
+      fireDelay: 1.4,
+      damage: 20,
+      color: '#f97316',
+    },
+    totem: {
+      name: 'Copium Totem',
+      range: 130,
+      fireDelay: 0.4,
+      damage: 4,
+      color: '#a855f7',
+    },
+  };
+
+  // Path waypoints (in canvas coords)
+  const path = [
+    { x: -60, y: 260 },
+    { x: 220, y: 260 },
+    { x: 220, y: 140 },
+    { x: 560, y: 140 },
+    { x: 560, y: 360 },
+    { x: 860, y: 360 },
+  ];
+
+  const vaultCore = { x: 910, y: 280, radius: 42 };
+
+  // Tower slots (circles onde podes construir)
+  const towerSlots = [
+    { x: 280, y: 200, tower: null },
+    { x: 280, y: 340, tower: null },
+    { x: 430, y: 200, tower: null },
+    { x: 430, y: 340, tower: null },
+    { x: 720, y: 200, tower: null },
+    { x: 720, y: 340, tower: null },
+  ];
+
+  const wavesBase = [
+    { count: 8, hp: 22, speed: 70 },
+    { count: 10, hp: 32, speed: 80 },
+    { count: 12, hp: 45, speed: 90 },
+    { count: 14, hp: 60, speed: 100 },
+    { count: 16, hp: 80, speed: 110 },
+  ];
+
+  function getWaveConfig(index) {
+    const baseIdx = Math.min(index, wavesBase.length - 1);
+    const base = wavesBase[baseIdx];
+    const extraLevel = Math.max(0, index - (wavesBase.length - 1));
+    const scale = 1 + extraLevel * 0.3;
+
+    return {
+      count: Math.round(base.count * (1 + extraLevel * 0.1)),
+      hp: Math.round(base.hp * scale),
+      speed: base.speed + extraLevel * 15,
+    };
+  }
+
+  function getDifficultyLabel(index) {
+    if (index <= 1) return 'Normal';
+    if (index <= 3) return 'Spicy';
+    if (index <= 5) return 'Insane';
+    return 'Mythic';
+  }
+
+  /*** GAME STATE ***/
+  const state = {
+    vaultHp: VAULT_MAX_HP,
+    coins: 60,
+    breaches: 0,
+
+    currentWaveIndex: 0,
+    waveInProgress: false,
+    betweenWaves: false,
+    enemies: [],
+    projectiles: [],
+    enemiesSpawned: 0,
+    spawnTimer: 0,
+    activeWave: null,
+
+    speed: 1,
+    gigaCharge: 0,
+    gigaReady: false,
+
+    selectedSlotIndex: null,
+    pendingTowerType: null,
+
+    tapsLeft: TAPS_PER_INTERMISSION,
+    running: false,
+  };
+
+  let lastTimestamp = null;
+  let rafId = null;
+
+  /*** RESET ***/
+  function resetGame() {
+    state.vaultHp = VAULT_MAX_HP;
+    state.coins = 60;
+    state.breaches = 0;
+    state.currentWaveIndex = 0;
+    state.waveInProgress = false;
+    state.betweenWaves = true;
+    state.enemies = [];
+    state.projectiles = [];
+    state.enemiesSpawned = 0;
+    state.spawnTimer = 0;
+    state.activeWave = null;
+    state.speed = 1;
+    state.gigaCharge = 0;
+    state.gigaReady = false;
+    state.selectedSlotIndex = null;
+    state.pendingTowerType = null;
+    state.tapsLeft = TAPS_PER_INTERMISSION;
+    towerSlots.forEach((s) => (s.tower = null));
+    updateHud();
+  }
+
+  /*** HUD ***/
+  function updateHud() {
+    vaultHpLabel.textContent = state.vaultHp.toString();
+    coinsLabel.textContent = state.coins.toString();
+    waveLabel.textContent = (state.currentWaveIndex + 1).toString();
+    breachLabel.textContent = state.breaches.toString();
+
+    const enemiesRemaining =
+      (state.activeWave ? state.activeWave.count - state.enemiesSpawned : 0) +
+      state.enemies.length;
+    enemiesLabel.textContent = enemiesRemaining.toString();
+
+    waveStateLabel.textContent = !state.running
+      ? 'Sleeping'
+      : state.waveInProgress
+      ? 'Wave in progress'
+      : 'Intermission';
+
+    difficultyLabel.textContent = getDifficultyLabel(state.currentWaveIndex);
+
+    tapVaultBtn.disabled =
+      !state.betweenWaves || state.tapsLeft <= 0 || !state.running;
+
+    startWaveBtn.disabled =
+      !state.betweenWaves || state.vaultHp <= 0 || !state.running;
+
+    speedBtn.textContent = `Speed: ${state.speed.toFixed(1)}x`;
+
+    const gigaPct = Math.round((state.gigaCharge / GIGA_MAX) * 100);
+    if (state.gigaReady) {
+      gigaBtn.textContent = 'GIGA PURGE READY';
+      gigaBtn.disabled = false;
+      gigaBtn.classList.add('ready');
+    } else {
+      gigaBtn.textContent = `GIGA Charge ${gigaPct}%`;
+      gigaBtn.disabled = true;
+      gigaBtn.classList.remove('ready');
+    }
+  }
+
+  /*** ENEMY / TOWER HELPERS ***/
+  function spawnEnemy() {
+    if (!state.activeWave) return;
+    if (state.enemiesSpawned >= state.activeWave.count) return;
+
+    const start = path[0];
+    state.enemies.push({
+      x: start.x,
+      y: start.y,
+      hp: state.activeWave.hp,
+      maxHp: state.activeWave.hp,
+      speed: state.activeWave.speed,
+      waypointIndex: 1,
+    });
+    state.enemiesSpawned += 1;
+  }
+
+  function moveEnemies(dt) {
+    for (let i = state.enemies.length - 1; i >= 0; i--) {
+      const e = state.enemies[i];
+      const targetWp = path[e.waypointIndex];
+      if (!targetWp) {
+        // reached end → breach
+        state.enemies.splice(i, 1);
+        handleBreach();
+        continue;
+      }
+
+      const dx = targetWp.x - e.x;
+      const dy = targetWp.y - e.y;
+      const dist = Math.hypot(dx, dy) || 1;
+      const step = e.speed * dt;
+
+      if (step >= dist) {
+        e.x = targetWp.x;
+        e.y = targetWp.y;
+        e.waypointIndex += 1;
+
+        // if passou para além do último, conta breach
+        if (e.waypointIndex >= path.length) {
+          state.enemies.splice(i, 1);
+          handleBreach();
+        }
+      } else {
+        e.x += (dx / dist) * step;
+        e.y += (dy / dist) * step;
+      }
+    }
+  }
+
+  function handleBreach() {
+    state.breaches += 1;
+    state.vaultHp = Math.max(0, state.vaultHp - 10);
+    state.gigaCharge = Math.min(GIGA_MAX, state.gigaCharge + 20);
+
+    if (state.vaultHp <= 0) {
+      state.waveInProgress = false;
+      state.betweenWaves = false;
+    }
+  }
+
+  function spawnProjectile(tower, target) {
+    const angle = Math.atan2(target.y - tower.y, target.x - tower.x);
+    const speed = 320;
+    state.projectiles.push({
+      x: tower.x,
+      y: tower.y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      damage: tower.damage,
+      color: tower.color,
+      life: 2,
+    });
+  }
+
+  function updateProjectiles(dt) {
+    for (let i = state.projectiles.length - 1; i >= 0; i--) {
+      const p = state.projectiles[i];
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      p.life -= dt;
+
+      if (
+        p.x < -50 ||
+        p.x > canvas.width + 50 ||
+        p.y < -50 ||
+        p.y > canvas.height + 50 ||
+        p.life <= 0
+      ) {
+        state.projectiles.splice(i, 1);
+        continue;
+      }
+
+      // collision
+      let hit = false;
+      for (let j = state.enemies.length - 1; j >= 0; j--) {
+        const e = state.enemies[j];
+        const dist = Math.hypot(e.x - p.x, e.y - p.y);
+        if (dist < 14) {
+          e.hp -= p.damage;
+          if (e.hp <= 0) {
+            state.enemies.splice(j, 1);
+            state.coins += 3;
+          }
+          hit = true;
+          break;
+        }
+      }
+      if (hit) state.projectiles.splice(i, 1);
+    }
+  }
+
+  function findTargetForTower(tower) {
+    let best = null;
+    let bestProgress = -Infinity;
+    for (const e of state.enemies) {
+      const dist = Math.hypot(e.x - tower.x, e.y - tower.y);
+      if (dist <= tower.range) {
+        // progress by waypointIndex + x
+        const progress = e.waypointIndex * 1000 + e.x;
+        if (progress > bestProgress) {
+          bestProgress = progress;
+          best = e;
+        }
+      }
+    }
+    return best;
+  }
+
+  function updateTowers(dt) {
+    for (const slot of towerSlots) {
+      if (!slot.tower) continue;
+      const t = slot.tower;
+      t.cooldown -= dt;
+      if (t.cooldown <= 0) {
+        const target = findTargetForTower(t);
+        if (target) {
+          if (t.type === 'totem') {
+            // pseudo-AoE: vários hitzinhos
+            target.hp -= t.damage * 0.7;
+            if (target.hp <= 0) {
+              const idx = state.enemies.indexOf(target);
+              if (idx !== -1) state.enemies.splice(idx, 1);
+              state.coins += 3;
+            }
+          } else {
+            spawnProjectile(t, target);
+          }
+          t.cooldown = t.fireDelay;
+        }
+      }
+    }
+  }
+
+  /*** WAVE FLOW ***/
+  function startNextWave() {
+    if (!state.betweenWaves || !state.running) return;
+    state.waveInProgress = true;
+    state.betweenWaves = false;
+    state.enemies = [];
+    state.projectiles = [];
+    state.enemiesSpawned = 0;
+    state.spawnTimer = 0;
+    state.activeWave = getWaveConfig(state.currentWaveIndex);
+    state.tapsLeft = 0; // bloqueia tap durante wave
+  }
+
+  function checkWaveEnd() {
+    if (!state.waveInProgress || !state.activeWave) return;
+    const allSpawned =
+      state.enemiesSpawned >= state.activeWave.count &&
+      state.enemies.length === 0;
+
+    if (allSpawned) {
+      state.waveInProgress = false;
+      if (state.vaultHp > 0) {
+        state.betweenWaves = true;
+        state.currentWaveIndex += 1;
+        state.coins += 10; // reward base
+        state.tapsLeft = TAPS_PER_INTERMISSION;
+      }
+    }
+  }
+
+  /*** GIGA PURGE ***/
+  function triggerGiga() {
+    if (!state.gigaReady) return;
+    state.enemies = [];
+    state.projectiles = [];
+    state.gigaCharge = 0;
+    state.gigaReady = false;
+  }
+
+  /*** MAIN UPDATE & DRAW ***/
+  function update(dt) {
+    if (!state.running) return;
+
+    if (state.waveInProgress && state.activeWave) {
+      // spawn
+      state.spawnTimer += dt;
+      const spawnInterval = 0.9;
+      while (
+        state.spawnTimer >= spawnInterval &&
+        state.enemiesSpawned < state.activeWave.count
+      ) {
+        spawnEnemy();
+        state.spawnTimer -= spawnInterval;
+      }
+
+      moveEnemies(dt);
+      updateTowers(dt);
+      updateProjectiles(dt);
+      checkWaveEnd();
+    } else {
+      // ainda assim, mantém projéteis a morrer / torres idle etc
+      updateTowers(dt);
+      updateProjectiles(dt);
+    }
+
+    // giga ready?
+    if (!state.gigaReady && state.gigaCharge >= GIGA_MAX) {
+      state.gigaReady = true;
+    }
+
+    updateHud();
+  }
+
+  function drawBackground() {
+    // fundo
+    ctx.fillStyle = '#030314';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // soft grid
-    ctx.strokeStyle = "rgba(148, 163, 184, 0.08)";
+    // grid suave
+    ctx.strokeStyle = 'rgba(148,163,184,0.08)';
     ctx.lineWidth = 1;
-    const step = 32;
-    for (let x = 0; x < canvas.width; x += step) {
+    for (let x = 40; x < canvas.width; x += 40) {
       ctx.beginPath();
       ctx.moveTo(x, 0);
       ctx.lineTo(x, canvas.height);
       ctx.stroke();
     }
-    for (let y = 0; y < canvas.height; y += step) {
+    for (let y = 40; y < canvas.height; y += 40) {
       ctx.beginPath();
       ctx.moveTo(0, y);
       ctx.lineTo(canvas.width, y);
       ctx.stroke();
     }
 
-    // vault core
-    const coreX = canvas.width - 80;
-    const coreY = canvas.height / 2;
-    const coreR = 26;
-
-    const tRatio = Math.max(0, state.treasuryPercent) / state.treasuryMax;
-    const coreColor =
-      tRatio > 0.66
-        ? "#22c55e"
-        : tRatio > 0.33
-        ? "#eab308"
-        : "#f97316";
-
-    const gradient = ctx.createRadialGradient(
-      coreX,
-      coreY,
-      4,
-      coreX,
-      coreY,
-      coreR + 18
+    // path
+    ctx.beginPath();
+    ctx.lineWidth = 16;
+    const grad = ctx.createLinearGradient(
+      path[0].x,
+      path[0].y,
+      path[path.length - 1].x,
+      path[path.length - 1].y
     );
-    gradient.addColorStop(0, coreColor);
-    gradient.addColorStop(1, "rgba(15, 23, 42, 0)");
-
-    ctx.fillStyle = gradient;
-    ctx.beginPath();
-    ctx.arc(coreX, coreY, coreR + 18, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.fillStyle = "#020617";
-    ctx.beginPath();
-    ctx.arc(coreX, coreY, coreR, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.strokeStyle = coreColor;
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.arc(coreX, coreY, coreR, 0, Math.PI * 2);
+    grad.addColorStop(0, 'rgba(56,189,248,0.08)');
+    grad.addColorStop(1, 'rgba(251,191,36,0.26)');
+    ctx.strokeStyle = grad;
+    ctx.moveTo(path[0].x, path[0].y);
+    for (let i = 1; i < path.length; i++) {
+      ctx.lineTo(path[i].x, path[i].y);
+    }
     ctx.stroke();
 
-    ctx.fillStyle = coreColor;
-    ctx.font = "bold 18px system-ui";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText("β", coreX, coreY);
-    ctx.restore();
+    // linha brilhante
+    ctx.beginPath();
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = 'rgba(251,191,36,0.8)';
+    ctx.moveTo(path[0].x, path[0].y);
+    for (let i = 1; i < path.length; i++) {
+      ctx.lineTo(path[i].x, path[i].y);
+    }
+    ctx.stroke();
+
+    // vault core
+    const r = vaultCore.radius;
+    const grd2 = ctx.createRadialGradient(
+      vaultCore.x,
+      vaultCore.y,
+      4,
+      vaultCore.x,
+      vaultCore.y,
+      r
+    );
+    grd2.addColorStop(0, 'rgba(250,250,210,1)');
+    grd2.addColorStop(0.4, 'rgba(245,158,11,0.9)');
+    grd2.addColorStop(1, 'rgba(15,23,42,0.1)');
+    ctx.fillStyle = grd2;
+    ctx.beginPath();
+    ctx.arc(vaultCore.x, vaultCore.y, r, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = 'rgba(251,191,36,0.9)';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.arc(vaultCore.x, vaultCore.y, r + 4, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // small β sign
+    ctx.fillStyle = '#020617';
+    ctx.font = 'bold 24px system-ui';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('β', vaultCore.x, vaultCore.y);
   }
 
-  function drawEnemies(dt) {
-    const width = canvas.width;
+  function drawTowerSlots() {
+    for (let i = 0; i < towerSlots.length; i++) {
+      const slot = towerSlots[i];
+      const isSelected = state.selectedSlotIndex === i;
+      ctx.save();
+      if (!slot.tower) {
+        ctx.beginPath();
+        ctx.arc(slot.x, slot.y, 22, 0, Math.PI * 2);
+        ctx.strokeStyle = isSelected
+          ? 'rgba(96,165,250,0.9)'
+          : 'rgba(148,163,184,0.6)';
+        ctx.lineWidth = isSelected ? 3 : 2;
+        ctx.setLineDash([4, 4]);
+        ctx.stroke();
 
-    ctx.save();
-    for (const enemy of state.enemies) {
-      // spawn delay
-      enemy.timeAlive += dt;
-      if (enemy.timeAlive < enemy.spawnDelay) continue;
+        ctx.beginPath();
+        ctx.arc(slot.x, slot.y, 10, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(15,23,42,0.9)';
+        ctx.fill();
+      } else {
+        const t = slot.tower;
+        ctx.beginPath();
+        ctx.arc(slot.x, slot.y, 20, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(15,23,42,0.95)';
+        ctx.fill();
 
-      if (!enemy.alive) continue;
+        ctx.lineWidth = isSelected ? 3 : 2;
+        ctx.strokeStyle = t.color || '#e5e7eb';
+        ctx.stroke();
 
-      // move
-      enemy.x += (enemy.speed * dt);
+        ctx.fillStyle = t.color || '#e5e7eb';
+        ctx.font = 'bold 12px system-ui';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
 
-      // draw
-      const baseColor = "#f97316";
-      const edgeColor = "#fecaca";
+        let glyph = 'S';
+        if (t.type === 'cannon') glyph = 'L';
+        else if (t.type === 'totem') glyph = 'C';
+        ctx.fillText(glyph, slot.x, slot.y);
+      }
+      ctx.restore();
+    }
+  }
 
-      // glow
-      const grd = ctx.createRadialGradient(
-        enemy.x,
-        enemy.y,
-        2,
-        enemy.x,
-        enemy.y,
-        enemy.radius + 10
-      );
-      grd.addColorStop(0, "rgba(248, 113, 113, 0.9)");
-      grd.addColorStop(1, "rgba(15, 23, 42, 0)");
-      ctx.fillStyle = grd;
+  function drawEnemies() {
+    for (const e of state.enemies) {
+      ctx.save();
       ctx.beginPath();
-      ctx.arc(enemy.x, enemy.y, enemy.radius + 10, 0, Math.PI * 2);
+      ctx.arc(e.x, e.y, 14, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(248,113,113,0.9)';
       ctx.fill();
 
-      // core
-      ctx.fillStyle = baseColor;
+      // hp bar
+      const barW = 26;
+      const barH = 4;
+      const hpRatio = Math.max(0, e.hp / e.maxHp);
+      const x = e.x - barW / 2;
+      const y = e.y - 18;
+
+      ctx.fillStyle = 'rgba(15,23,42,0.9)';
+      ctx.fillRect(x, y, barW, barH);
+      ctx.fillStyle = hpRatio > 0.5 ? '#22c55e' : hpRatio > 0.25 ? '#eab308' : '#ef4444';
+      ctx.fillRect(x, y, barW * hpRatio, barH);
+
+      ctx.restore();
+    }
+  }
+
+  function drawProjectiles() {
+    for (const p of state.projectiles) {
+      ctx.save();
       ctx.beginPath();
-      ctx.arc(enemy.x, enemy.y, enemy.radius, 0, Math.PI * 2);
+      ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+      ctx.fillStyle = p.color || '#e5e7eb';
+      ctx.shadowColor = p.color || '#e5e7eb';
+      ctx.shadowBlur = 8;
       ctx.fill();
-
-      ctx.strokeStyle = edgeColor;
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.arc(enemy.x, enemy.y, enemy.radius, 0, Math.PI * 2);
-      ctx.stroke();
-
-      ctx.fillStyle = "#111827";
-      ctx.font = "10px system-ui";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText("REKT", enemy.x, enemy.y);
-    }
-    ctx.restore();
-
-    // leak check
-    for (const enemy of state.enemies) {
-      if (!enemy.alive) continue;
-      if (enemy.timeAlive < enemy.spawnDelay) continue;
-      if (!enemy.leaked && enemy.x > width - 80) {
-        // enemy leaks into vault
-        enemy.leaked = true;
-        enemy.alive = false;
-
-        state.treasuryPercent -= enemy.damage;
-        state.totalTreasuryLost += enemy.damage;
-        // chance to also lose a life on bigger waves
-        if (Math.random() < 0.15 + 0.02 * state.wave) {
-          state.lives -= 1;
-          logEvent("Vault breached by a degen dragon. Life lost.");
-        } else {
-          logEvent("Vault treasury drained slightly by a fleeing goblin.");
-        }
-
-        if (state.treasuryPercent <= 0 || state.lives <= 0) {
-          state.treasuryPercent = Math.max(0, state.treasuryPercent);
-          state.lives = Math.max(0, state.lives);
-          updateStatsUI();
-          endWave(false);
-          return;
-        }
-
-        updateStatsUI();
-      }
-    }
-
-    // reward for killed enemies (i.e., those that never crossed?)
-    let earned = 0;
-    for (const enemy of state.enemies) {
-      if (!enemy.alive && !enemy.leaked && enemy.timeAlive > enemy.spawnDelay) {
-        earned += CONFIG.rewardPerEnemy;
-      }
-    }
-    if (earned > 0) {
-      state.betaCoins += earned;
-      updateStatsUI();
-    }
-
-    // win condition: all enemies processed
-    const anyActive = state.enemies.some(
-      (e) => e.alive && e.timeAlive >= e.spawnDelay && !e.leaked
-    );
-    const anyWaiting = state.enemies.some(
-      (e) => e.timeAlive < e.spawnDelay
-    );
-
-    if (!anyActive && !anyWaiting && state.running) {
-      endWave(true);
+      ctx.restore();
     }
   }
 
-  // --- MAIN LOOP ---
+  function drawOverlayInfo() {
+    if (!state.running) {
+      ctx.fillStyle = 'rgba(15,23,42,0.8)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#e5e7eb';
+      ctx.font = '18px system-ui';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('Click "Wake the Vault β" to begin.', canvas.width / 2, canvas.height / 2);
+      return;
+    }
 
-  function gameLoop(timestamp) {
-    if (!state.running) return;
-
-    const dt = (timestamp - state.lastTimestamp) / 1000; // seconds
-    state.lastTimestamp = timestamp;
-
-    clearCanvas();
-    drawBackgroundGrid();
-    drawEnemies(dt);
-
-    if (state.running) {
-      requestAnimationFrame(gameLoop);
+    if (state.vaultHp <= 0) {
+      ctx.fillStyle = 'rgba(0,0,0,0.75)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#fecaca';
+      ctx.font = '24px system-ui';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('Vault Breached — Run Over.', canvas.width / 2, canvas.height / 2 - 10);
+      ctx.fillStyle = '#9ca3af';
+      ctx.font = '16px system-ui';
+      ctx.fillText('Press "Reset Run" on the right.', canvas.width / 2, canvas.height / 2 + 20);
     }
   }
 
-  // --- TOWER LIST PLACEHOLDER ---
-
-  if (towerListEl) {
-    towerListEl.innerHTML = `
-      <span>• Slot 1 — <strong>Sentinel Node</strong> (visual only)</span>
-      <span>• Slot 2 — <strong>Liquidity Cannon</strong> (WIP)</span>
-      <span>• Slot 3 — <strong>Copium Shield</strong> (WIP)</span>
-    `;
+  function draw() {
+    drawBackground();
+    drawTowerSlots();
+    drawEnemies();
+    drawProjectiles();
+    drawOverlayInfo();
   }
 
-  // --- EVENTS ---
+  /*** MAIN LOOP ***/
+  function loop(timestamp) {
+    if (!lastTimestamp) lastTimestamp = timestamp;
+    const rawDt = (timestamp - lastTimestamp) / 1000;
+    lastTimestamp = timestamp;
+    const dt = Math.min(0.05, rawDt) * state.speed;
 
-  if (startWaveBtn) {
-    startWaveBtn.addEventListener("click", () => {
-      if (!state.running) {
-        if (state.treasuryPercent <= 0 || state.lives <= 0) {
-          resetRun();
-        }
-        spawnWave();
+    update(dt);
+    draw();
+
+    rafId = requestAnimationFrame(loop);
+  }
+
+  /*** INPUT: CANVAS CLICK (SELEÇÃO DE SLOT) ***/
+  canvas.addEventListener('click', (ev) => {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const x = (ev.clientX - rect.left) * scaleX;
+    const y = (ev.clientY - rect.top) * scaleY;
+
+    let clickedIndex = null;
+    for (let i = 0; i < towerSlots.length; i++) {
+      const s = towerSlots[i];
+      const dist = Math.hypot(x - s.x, y - s.y);
+      if (dist <= 24) {
+        clickedIndex = i;
+        break;
       }
+    }
+
+    state.selectedSlotIndex = clickedIndex;
+  });
+
+  /*** INPUT: BUILD TOWERS ***/
+  towerButtons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const type = btn.getAttribute('data-tower');
+      if (!type || !towerDefs[type]) return;
+
+      if (state.selectedSlotIndex == null) {
+        alert('Clica primeiro num slot brilhante na arena.');
+        return;
+      }
+
+      const cost = towerCosts[type] || 0;
+      if (state.coins < cost) {
+        alert('β coins insuficientes.');
+        return;
+      }
+
+      const slot = towerSlots[state.selectedSlotIndex];
+      if (slot.tower) {
+        alert('Esse slot já tem uma torre.');
+        return;
+      }
+
+      const def = towerDefs[type];
+      slot.tower = {
+        type,
+        x: slot.x,
+        y: slot.y,
+        range: def.range,
+        fireDelay: def.fireDelay,
+        cooldown: def.fireDelay * Math.random(),
+        damage: def.damage,
+        color: def.color,
+      };
+
+      state.coins -= cost;
+      updateHud();
     });
-  }
+  });
 
-  // Initial paint
-  updateStatsUI();
-  clearCanvas();
-  drawBackgroundGrid();
-  logEvent("Vault of β ready. Hit 'Start Wave' to begin the defense.");
+  /*** INPUT: TAP VAULT ***/
+  tapVaultBtn.addEventListener('click', () => {
+    if (!state.running || !state.betweenWaves) return;
+    if (state.tapsLeft <= 0) return;
+    state.coins += 5;
+    state.tapsLeft -= 1;
+    updateHud();
+  });
+
+  /*** INPUT: WAVES / SPEED / RESET / GIGA ***/
+  startWaveBtn.addEventListener('click', () => {
+    startNextWave();
+    updateHud();
+  });
+
+  speedBtn.addEventListener('click', () => {
+    state.speed = state.speed === 1 ? 2 : 1;
+    updateHud();
+  });
+
+  clearGameBtn.addEventListener('click', () => {
+    resetGame();
+  });
+
+  gigaBtn.addEventListener('click', () => {
+    triggerGiga();
+    updateHud();
+  });
+
+  /*** OVERLAY START ***/
+  startOverlay.addEventListener('click', () => {
+    startOverlay.style.opacity = '0';
+    startOverlay.style.pointerEvents = 'none';
+    state.running = true;
+    state.betweenWaves = true;
+    updateHud();
+  });
+
+  /*** BOOT ***/
+  resetGame();
+  rafId = requestAnimationFrame(loop);
 });

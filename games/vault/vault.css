@@ -53,7 +53,11 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: linear-gradient(90deg, rgba(10, 14, 35, 0.9), rgba(8, 19, 45, 0.9));
+  background: linear-gradient(
+    90deg,
+    rgba(10, 14, 35, 0.9),
+    rgba(8, 19, 45, 0.9)
+  );
   border-radius: var(--radius-lg);
   padding: 14px 18px;
   border: 1px solid var(--border-soft);
@@ -106,9 +110,10 @@ canvas#game {
   max-width: 100%;
   height: auto;
   border-radius: 12px;
+  background: radial-gradient(circle at top, #050716 0, #02020a 60%, #000 100%);
 }
 
-/* CTA overlay (sleep state / start game) */
+/* CTA overlay */
 
 .cta-overlay {
   position: absolute;
@@ -117,17 +122,26 @@ canvas#game {
   align-items: center;
   justify-content: center;
   border: none;
-  background: radial-gradient(circle at center, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.9));
+  background: radial-gradient(
+    circle at center,
+    rgba(0, 0, 0, 0.2),
+    rgba(0, 0, 0, 0.9)
+  );
   color: var(--accent-strong);
   font-size: 1.1rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: background 0.25s ease, transform 0.15s ease;
+  transition: background 0.25s ease, transform 0.15s ease, opacity 0.2s ease;
+  z-index: 3;
 }
 
 .cta-overlay:hover {
-  background: radial-gradient(circle at center, rgba(246, 183, 60, 0.08), rgba(0, 0, 0, 0.9));
+  background: radial-gradient(
+    circle at center,
+    rgba(246, 183, 60, 0.08),
+    rgba(0, 0, 0, 0.9)
+  );
   transform: scale(1.01);
 }
 
@@ -165,7 +179,8 @@ canvas#game {
 .primary-btn,
 .secondary-btn,
 .vault-tap-btn,
-.giga-btn {
+.giga-btn,
+.wallet-btn {
   font-family: inherit;
   border-radius: var(--radius-md);
   border: 1px solid transparent;
@@ -176,15 +191,19 @@ canvas#game {
     border-color 0.2s ease, color 0.2s ease;
 }
 
+/* primary / giga / wallet */
+
 .primary-btn,
-.giga-btn {
+.giga-btn,
+.wallet-btn {
   background: linear-gradient(135deg, var(--accent), var(--accent-strong));
   color: #1a1205;
   box-shadow: 0 12px 30px rgba(246, 183, 60, 0.4);
 }
 
 .primary-btn:hover,
-.giga-btn:hover {
+.giga-btn:hover,
+.wallet-btn:hover {
   transform: translateY(-1px);
   box-shadow: 0 18px 40px rgba(246, 183, 60, 0.55);
 }
@@ -214,23 +233,18 @@ canvas#game {
   border-color: rgba(246, 183, 60, 0.4);
 }
 
-.vault-tap-btn:hover {
+.vault-tap-btn:hover:not(:disabled) {
   background: radial-gradient(circle at top, #3b468c, #181c3a);
 }
 
-/* Stage panel */
-
-.stage-panel div {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.86rem;
-  color: var(--text-muted);
-  margin-bottom: 4px;
+.vault-tap-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
 }
 
-/* Actions panel */
+/* Secondary buttons */
 
-.actions-panel .secondary-btn {
+.secondary-btn {
   width: 100%;
   margin-top: 6px;
   background: transparent;
@@ -238,7 +252,7 @@ canvas#game {
   border-color: rgba(255, 255, 255, 0.16);
 }
 
-.actions-panel .secondary-btn:hover {
+.secondary-btn:hover {
   background: rgba(255, 255, 255, 0.06);
 }
 
@@ -260,19 +274,31 @@ canvas#game {
   color: var(--text-muted);
 }
 
-/* Wallet/button grouping in top bar */
+/* Stage panel lines */
 
-.wallet-btn {
-  font-family: inherit;
-  border-radius: var(--radius-md);
-  border: 1px solid transparent;
-  padding: 8px 12px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
-  color: #1a1205;
+.stage-panel div {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.86rem;
+  color: var(--text-muted);
+  margin-bottom: 4px;
 }
 
+/* Back link style */
+
+.back-link {
+  text-decoration: none;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 6px 10px;
+  font-size: 0.85rem;
+  color: var(--text-main);
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.back-link:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
 
 /* Responsive */
 
