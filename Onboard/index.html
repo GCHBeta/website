@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GCAb — Become the Market</title>
+  <link rel="icon" type="image/png" href="./favicon.png" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <!-- Ambient layers -->
+  <div class="bg-grid"></div>
+  <div class="bg-glow"></div>
+  <div class="bg-noise"></div>
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="sigil">β</div>
+      <div class="brand-text">
+        <div class="name">GCAb</div>
+        <div class="tag">GIGACHAD ALPHA <span class="muted">(still βeta)</span></div>
+      </div>
+    </div>
+
+    <div class="top-actions">
+      <div class="pill" id="netPill">Network: <span id="netName">—</span></div>
+      <div class="pill" id="addrPill">Wallet: <span id="addrShort">—</span></div>
+      <button class="btn primary" id="connectBtn">Connect MetaMask</button>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- HERO (Story + CTA) -->
+    <section class="hero">
+      <div class="hero-left">
+        <h1>
+          Become the Market.
+          <span class="accent">Hold the Myth.</span>
+        </h1>
+
+        <p class="lead">
+          Connect your wallet, prove ownership (signature), and enter the GCAb social game.
+          Holdings define <b>Power</b>. The protocol mints a limited amount of <b>Energy</b> daily.
+        </p>
+
+        <div class="hero-cta">
+          <button class="btn ghost" id="addTokenBtn" disabled>Add GCAb to MetaMask</button>
+          <a class="btn secondary" id="buyLink" href="https://app.uniswap.org/#/swap" target="_blank" rel="noreferrer">
+            Buy on Uniswap
+          </a>
+        </div>
+
+        <div class="status" id="statusLine">
+          Status: <span id="statusText">Not connected.</span>
+        </div>
+      </div>
+
+      <!-- AURA CARD -->
+      <div class="hero-right">
+        <div class="card big">
+          <div class="card-title">Your Aura</div>
+
+          <div class="stat-grid">
+            <div class="stat">
+              <div class="label">GCAb Balance</div>
+              <div class="value" id="balText">—</div>
+              <div class="hint" id="balHint">Connect to sync your aura.</div>
+            </div>
+
+            <div class="stat">
+              <div class="label">Rank</div>
+              <div class="value glow" id="rankText">—</div>
+              <div class="hint" id="rankHint">Ranks unlock rooms + actions.</div>
+            </div>
+
+            <div class="stat">
+              <div class="label">Power</div>
+              <div class="value" id="powerText">—</div>
+              <div class="hint">Non-spendable. Derived from holdings.</div>
+            </div>
+
+            <div class="stat">
+              <div class="label">Title</div>
+              <div class="value" id="titleText">—</div>
+              <div class="hint">Cosmetic lore badge (for now).</div>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="row">
+            <div class="small muted">Chain</div>
+            <div class="small" id="chainText">—</div>
+          </div>
+          <div class="row">
+            <div class="small muted">Address</div>
+            <div class="small mono" id="addrFull">—</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- REAL GAME CORE -->
+    <section class="section">
+      <div class="section-head">
+        <h2>Game Core</h2>
+        <p class="muted">
+          Energy is minted once per UTC day by the backend. Power comes from holdings instantly.
+          This section is the real gameplay layer (not the sandbox).
+        </p>
+      </div>
+
+      <div class="grid">
+        <!-- Rooms -->
+        <div class="card">
+          <div class="card-title">Rooms (Unlock by Rank)</div>
+          <div class="rooms" id="rooms"></div>
+        </div>
+
+        <!-- Global Sidekicks -->
+<div class="card">
+  <div class="card-title">Potential Sidekicks (Live)</div>
+  <p class="muted">Real holders below your balance. Use the elevator. Claim free or buy instantly (1%).</p>
+
+  <div class="row">
+    <button class="btn ghost" id="loadCandidatesBtn" disabled>Scan Candidates</button>
+    <div class="pill">Found: <span id="candCount">0</span></div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Elevator -->
+  <div class="row" style="gap:8px; flex-wrap:wrap">
+    <button class="btn ghost" id="floorAll" data-floor="ALL">ALL</button>
+    <button class="btn ghost" id="floorB" data-floor="B">BASEMENT</button>
+    <button class="btn ghost" id="floorS" data-floor="S">SIGNAL</button>
+    <button class="btn ghost" id="floorM" data-floor="M">MYTH</button>
+    <button class="btn ghost" id="floorA" data-floor="A">ALPHA</button>
+    <div class="pill">Floor: <span id="floorText">ALL</span></div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div id="candidatesList" class="rooms"></div>
+</div>
+
+
+
+        <!-- Claim Sidekick -->
+        <div class="card">
+          <div class="card-title">Claim a Sidekick</div>
+          <p class="muted">
+            This action should be server-authenticated. If it’s still local on your build,
+            treat it as sandbox until we wire the spend endpoints.
+          </p>
+
+          <div class="row">
+            <input class="input" id="sidekickInput" placeholder="Sidekick name (e.g., MiniChad_007)" />
+            <button class="btn primary" id="claimBtn" disabled>Claim</button>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- Energy (Real / Local fallback) -->
+<div class="card">
+  <div class="card-title">Energy (Daily UTC)</div>
+  <p class="muted">
+    Claim once per day. Unclaimed energy stores up to 3 days (warehouse).
+    Streak boosts your mint.
+  </p>
+
+  <div class="stat-grid">
+    <div class="stat">
+      <div class="label">Energy Balance</div>
+      <div class="value" id="energyBalanceText">—</div>
+      <div class="hint" id="energyHint">Connect wallet to sync.</div>
+    </div>
+
+    <div class="stat">
+      <div class="label">Daily Mint</div>
+      <div class="value" id="energyDailyText">—</div>
+      <div class="hint">Includes streak bonus.</div>
+    </div>
+
+    <div class="stat">
+      <div class="label">Unclaimed</div>
+      <div class="value glow" id="energyUnclaimedText">—</div>
+      <div class="hint">Cap: 3 days stored.</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <button class="btn primary full" id="claimEnergyBtn" disabled>Claim Energy</button>
+</div>
+          <!-- End Energy -->
+
+          <div class="row">
+            <div class="small muted">Your Sidekick</div>
+            <div class="small" id="sidekickText">—</div>
+          </div>
+
+          <button class="btn ghost full" id="releaseBtn" disabled>Release Sidekick</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- SANDBOX (clearly labeled) -->
+    <section class="section">
+      <div class="section-head">
+        <h2>Sandbox</h2>
+        <p class="muted">
+          Temporary prototype features. We’ll replace these with server-verified mechanics.
+        </p>
+      </div>
+
+      <div class="grid">
+        <div class="card">
+          <div class="card-title">Daily Check-In (Prototype)</div>
+          <p class="muted">
+            Local streak only. Later: server-verified check-in that ties into daily Energy + quests.
+          </p>
+
+          <div class="row">
+            <button class="btn secondary" id="checkinBtn" disabled>Check In</button>
+            <div class="pill">Streak: <span id="streakText">0</span></div>
+          </div>
+
+          <div class="divider"></div>
+          <div class="small muted" id="checkinHint">Connect wallet to start.</div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">What Happens Next</div>
+          <p class="muted">
+            Next backend patch: Energy spend + sinks (boost, vote, upkeep). Then sidekick becomes real gameplay.
+          </p>
+          <div class="rooms">
+            <div class="room">
+              <div>
+                <div style="font-weight:800">Energy Spend API</div>
+                <div class="small muted">Burn + ledger reasons + no negative energy</div>
+              </div>
+              <div class="badge open">NEXT</div>
+            </div>
+
+            <div class="room">
+              <div>
+                <div style="font-weight:800">Sidekick Upkeep</div>
+                <div class="small muted">1,000 Energy/day or auto-release</div>
+              </div>
+              <div class="badge locked">SOON</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Fine Print</div>
+          <p class="muted">
+            GCAb is a meme. Not financial advice. The game is for entertainment. Energy is an in-app unit.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="fine">
+        GCAb is a meme. Not financial advice. Not a retirement plan. Consume memes responsibly.
+      </div>
+      <div class="fine muted">© 2025 GigaVerse Labs — still βeta.</div>
+    </footer>
+  </main>
+
+  <!-- Ethers v6 -->
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.2/dist/ethers.umd.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

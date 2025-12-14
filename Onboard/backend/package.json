@@ -1,0 +1,14 @@
+{
+  "name": "gcab-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.6.0",
+    "cors": "^2.8.5",
+    "ethers": "^6.13.2",
+    "express": "^4.19.2"
+  }
+}

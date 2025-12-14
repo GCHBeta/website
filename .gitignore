@@ -1,0 +1,8 @@
+Onboard/backend/server/gcab.db
+Onboard/backend/gcab.db
+
+# Node
+node_modules/
+npm-debug.log*
+.env
+.env.*
